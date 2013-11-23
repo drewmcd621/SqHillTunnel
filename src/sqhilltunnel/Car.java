@@ -56,6 +56,11 @@ public class Car  implements Comparable<Car>
     {
         distance += curSpeed;
     }
+    
+    public int getDistance()
+    {
+        return distance;
+    }
 
     @Override
     public int compareTo(Car o) 
