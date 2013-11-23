@@ -1,13 +1,39 @@
 
 package sqhilltunnel;
 
+import java.util.Random;
+
 
 public class Car  implements Comparable<Car>
 {
-    private int distance;
+    //Constants
+    private int acceleration = 6; //ft/s^2
+    private double pSlowdown = 0; 
+    //Variables
+    private int distance; //ft
+    private int maxSpeed; //ft/s
+    private int curSpeed; //ft/s
+    //Time
+    private long startTime; //s
+    private long endTime;  //s
+    //Other
+    private Road parent;
+    private Random r;
+    
+    public Car(int maximumSpeed, Road parentRoad, long Now)
+    {
+        distance = 0;
+        maxSpeed = maximumSpeed; 
+        curSpeed = maximumSpeed; //Enter sim at max speed
+        startTime = Now;
+        r = new Random();
+    }
     
     public void Accelerate()
     {
+        curSpeed += acceleration;
+        
+        if(curSpeed > maxSpeed) curSpeed = maxSpeed;
         
     }
     public void Slowdown()
@@ -16,11 +42,16 @@ public class Car  implements Comparable<Car>
     }
     public void RandomSlow()
     {
+        if(r.nextDouble() <= pSlowdown)
+        {
+            curSpeed -= acceleration;
+        }
         
+        if(curSpeed < 0) curSpeed = 0;
     }
     public void Move()
     {
-        
+        distance += curSpeed;
     }
 
     @Override
