@@ -18,14 +18,17 @@ public class Car  implements Comparable<Car>
     private long endTime;  //s
     //Other
     private Road parent;
+    int lane;
     private Random r;
     
-    public Car(int maximumSpeed, Road parentRoad, long Now)
+    
+    public Car(int maximumSpeed, Road parentRoad, int roadLane, long Now)
     {
         distance = 0;
         maxSpeed = maximumSpeed; 
         curSpeed = maximumSpeed; //Enter sim at max speed
         startTime = Now;
+        lane = roadLane;
         r = new Random();
     }
     
