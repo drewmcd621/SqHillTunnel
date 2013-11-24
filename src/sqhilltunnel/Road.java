@@ -20,13 +20,17 @@ public class Road
     
     Random r;
     long nextCar = 0;
-    double secPerCar = 1.59638153518691;
+    double CarsPerSecond = 0.626416666666667;
     int meanSpeed = 71;
     int stdSpeed = 19;
+    
+    //Stats
+    int cars = 0;
     
     public Road()
     {
         r = new Random();
+        nextCar = 0;
     }
     
     public void itterate(long Now)
@@ -49,7 +53,7 @@ public class Road
                c = LeftLane.get(left);
                left ++;
            }
-           if(LeftLane.get(left).compareTo(RightLane.get(right)) < 0) //Left lane is >= right lane, pick left
+           else if(LeftLane.get(left).compareTo(RightLane.get(right)) < 0) //Left lane is >= right lane, pick left
            {
                c = LeftLane.get(left);
                left ++;
@@ -68,6 +72,7 @@ public class Road
            if(c.getDistance() >= length)
            {
                removeCar(c);
+               total --;
            }
            
        }
@@ -76,6 +81,7 @@ public class Road
        if(Now >= nextCar)
        {
            addCar(Now);
+           cars++;
        }
        
        //Sort arrays on distance:  Farthest = First
@@ -103,6 +109,7 @@ public class Road
             LeftLane.add(LeftLane.size(), c);
         }
         c.Slowdown(); //Reduce speed due to cars in front
+        getNextArrival(Now); //Calc next arrival
         
     }
     public void removeCar(Car c)
@@ -114,8 +121,9 @@ public class Road
     
     private void getNextArrival(long Now)
     {
-        int ttc = getPoisson(r, secPerCar);
-        nextCar = Now + ttc;
+        double ttc = getPoisson(r, CarsPerSecond);
+        nextCar = Now + 1 + (int)Math.round(ttc) ;
+
     }
     
     private int getPoisson(Random r, double lambda) 
@@ -128,8 +136,13 @@ public class Road
                 p = p * r.nextDouble(); 
             } while (p > L); 
 
-            return k - 1; 
-    } 
+            return k -1; 
+    }
+    
+    public int getNumCars()
+    {
+        return cars;
+    }
         
       
 
