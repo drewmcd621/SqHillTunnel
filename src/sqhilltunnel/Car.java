@@ -61,15 +61,15 @@ public class Car  implements Comparable<Car>
     {
         return distance;
     }
-
+    //This seems counterintuative but it's so we can have the cars closest to the end of the sim at the front of arrays
     @Override
     public int compareTo(Car o) 
     {
-        if(distance > o.distance)
+        if(distance < o.distance)
         {
             return 1;
         }
-        else if (distance < o.distance)
+        else if (distance > o.distance)
         {
             return -1;
         }
