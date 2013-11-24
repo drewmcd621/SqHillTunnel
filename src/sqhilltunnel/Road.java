@@ -76,12 +76,22 @@ public class Road
            }
            
        }
+       for(Car rc : RightLane)
+       {
+           rc.Update();
+       }
+       for(Car lc : LeftLane)
+       {
+           lc.Update();
+       }
        
        //Add cars
        if(Now >= nextCar)
        {
-           addCar(Now);
-           cars++;
+           if(addCar(Now));
+           {
+            cars++;
+           }
        }
        
        //Sort arrays on distance:  Farthest = First
@@ -91,26 +101,88 @@ public class Road
        
         
     }
-    public void addCar(long Now)
+    public boolean addCar(long Now)
     {
         int speed = (int)(r.nextGaussian()*stdSpeed + meanSpeed);
-        int lane;
+        int lane = getLaneToAddCar();
         Car c;
-        if(r.nextBoolean())
+        if(lane == -1)
         {
-            lane = 0; //right
+            //No possible location to add car
+            nextCar = Now +1;
+            return false;
+        }
+        else if(lane == 0)
+        {
             c = new Car(speed, this, lane, Now);
             RightLane.add(RightLane.size(), c);
         }
         else
         {
-            lane = 1; //left
             c = new Car(speed, this, lane, Now);
             LeftLane.add(LeftLane.size(), c);
         }
         c.Slowdown(); //Reduce speed due to cars in front
         getNextArrival(Now); //Calc next arrival
+        return true;
+    }
+    private int getLaneToAddCar()
+    {
+        boolean right = false;
+        boolean left = false;
+        Car firstRight = null;
+        Car firstLeft = null;
+        if(RightLane.size() > 0)
+        {
+            firstRight = RightLane.get(RightLane.size() - 1);
+        }
+        else
+        {
+            right = true;
+        }
+        if(LeftLane.size() > 0)
+        {
+            firstLeft = LeftLane.get(LeftLane.size() - 1);
+        }
+        else
+        {
+            left = true;
+        }
+
+        if(!left)
+        {
+            if(firstLeft.getRearDistance() >= firstLeft.getCarLength())
+            {
+                left = true;
+            }
+        }
+        if(!right)
+        {
+            if(firstRight.getRearDistance() >= firstRight.getCarLength())
+            {
+               right = true;
+            }
+        }
         
+        if(left && right)
+        {
+            return r.nextInt(2); //Between 0 and 1
+        }
+        else if(left || right)
+        {
+            if(right)
+            {
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+        else
+        {
+            return -1;
+        }
     }
     public void removeCar(Car c)
     {
@@ -142,6 +214,17 @@ public class Road
     public int getNumCars()
     {
         return cars;
+    }
+    public ArrayList<Car> getLane(int lane)
+    {
+        if(lane == 0)
+        {
+            return RightLane;
+        }
+        else
+        {
+            return LeftLane;
+        }
     }
         
       
