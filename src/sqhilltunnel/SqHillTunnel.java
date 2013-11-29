@@ -15,6 +15,8 @@ public class SqHillTunnel {
             t++;
         }
         System.out.println(r.getNumCars());
+        System.out.println(r.getAvgSpeed());
+        System.out.println(r.getLaneChanges());
     }
 
 }

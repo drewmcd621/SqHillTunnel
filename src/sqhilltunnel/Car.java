@@ -23,17 +23,20 @@ public class Car  implements Comparable<Car>
     private Road parent;
     int lane;
     private Random r;
+    private boolean changeLane = false;
     
     
     public Car(int maximumSpeed, Road parentRoad, int roadLane, long Now)
     {
         distance = carlength; //So that the whole car is on the sim road
         maxSpeed = maximumSpeed; 
-        curSpeed = maximumSpeed; //Enter sim at max speed
+
         startTime = Now;
         lane = roadLane;
         parent = parentRoad;
         r = new Random();
+        curSpeed = maximumSpeed; //Enter sim at max speed
+        Slowdown(); //Then slowdown for car in front
     }
     
     public void Accelerate()
@@ -45,8 +48,78 @@ public class Car  implements Comparable<Car>
     }
     public void Slowdown()
     {
+        changeLane = false;
         int thislane = getCarPos(lane, false);
         int otherlane = getCarPos(1-lane,true);
+        
+        //Get car in front of me
+        Car front = getOtherCar(thislane - 1, lane);
+
+        
+        int maxs = curSpeed;
+        int maxlc = -1;
+        if(front != null)
+        {
+            maxs = front.getRearDistance() - getDistance() - 1; 
+            if(maxs > curSpeed)
+            {
+                maxs = curSpeed;
+            }
+        }
+        //Can't go negative
+        if(maxs < 0)
+        {
+            maxs =  0;
+        }
+        //Check if in a restricted lane change area
+        if(parent.canChangeLanes(this))
+        {
+            //Get car in front of me in other lane
+            Car otherfront = getOtherCar(otherlane, 1-lane);
+            //Get car behind me in other lane
+            Car otherbehind = getOtherCar(otherlane+1, 1-lane);
+                       
+            //Check if there is room to change lanes
+            if(otherbehind == null)
+            {
+                if(otherfront == null)
+                {
+                    maxlc = curSpeed;
+                }
+                else
+                {
+                    //Get max speed if changing lanes
+                    maxlc = Math.min(otherfront.getRearDistance() - this.distance - 1, curSpeed);
+                }
+            }
+            else if(otherbehind.newDist < this.getRearDistance())
+            {
+               if(otherfront == null)
+                {
+                    maxlc = curSpeed;
+                }
+                else
+                {
+                    //Get max speed if changing lanes
+                    maxlc = Math.min(otherfront.getRearDistance() - this.distance - 1, curSpeed);
+                }
+            }
+             //Prioritize staying in lane if equal speed
+            
+            
+        }
+        
+         if(maxlc > maxs)
+         {
+                //Change lanes
+                changeLane = true;
+                curSpeed = maxlc;
+         } 
+         else
+         {
+             changeLane = false;
+             curSpeed = maxs;
+         }          
         
     }
     private int getCarPos(int lanepos, boolean fuzzy)
@@ -66,11 +139,20 @@ public class Car  implements Comparable<Car>
         }
         return -1;  
     }
-    private int getOtherCarDistance(int cari, int carlane)
+    private Car getOtherCar(int cari, int carlane)
     {
+        
         ArrayList<Car> l = parent.getLane(carlane);
-        return l.get(cari).getRearDistance();
+        if(cari >= 0 && cari < l.size())
+        {
+        return l.get(cari);
+        }
+        else
+        {
+            return null;
+        }
     }
+
     public void RandomSlow()
     {
         if(r.nextDouble() <= pSlowdown)
@@ -86,9 +168,23 @@ public class Car  implements Comparable<Car>
     }
     public void Update()
     {
+        if(changeLane)
+        {
+            parent.changeLanes(this, 1-lane);
+            lane = 1 - lane;
+            changeLane = false;
+        }
         distance = newDist;
+ 
     }
-    
+    public void setEndTime(long end)
+    {
+        endTime = end;
+    }
+    public long getTotalTime()
+    {
+        return endTime - startTime;
+    }
     public int getDistance()
     {
         return distance;
