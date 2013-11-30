@@ -41,7 +41,7 @@ public class Road
         nextCar = 0;
     }
     
-    public void itterate(long Now)
+    public void itterate(long Now, long End)
     {
        
         //Sort arrays on distance:  Farthest = First
@@ -87,7 +87,7 @@ public class Road
       
        
        //Add cars
-       if(Now >= nextCar)
+       if(Now >= nextCar && Now < End)
        {
            if(addCar(Now));
            {
@@ -125,6 +125,10 @@ public class Road
       
         getNextArrival(Now); //Calc next arrival
         return true;
+    }
+    public int getCarsOnLanes()
+    {
+        return LeftLane.size() + RightLane.size();
     }
     private int getLaneToAddCar()
     {
@@ -271,7 +275,10 @@ public class Road
         }
         laneChanges ++;
     }
-        
+    public int getLength()
+    {
+        return length;
+    }
       
 
 }
