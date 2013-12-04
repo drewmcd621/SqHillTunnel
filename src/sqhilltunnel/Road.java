@@ -13,7 +13,7 @@ public class Road
 {
 
     
-    int length = 4225*3;
+    int length;
     
     ArrayList<Car> LeftLane = new ArrayList<>();
     ArrayList<Car> RightLane = new ArrayList<>();
@@ -22,25 +22,31 @@ public class Road
     long nextCar = 0;
     int LCRstart = -2;
     int LCRend = -1;
+    int iniDist = 100;
     
     //Settings
     double CarsPerSecond = 0.626416666666667;
-    int meanSpeed = 71;
-    int stdSpeed = 19;
+    int meanSpeed = 87;
+    int stdSpeed = 11;
     boolean laneChange = true;
     
     //Stats
     int cars = 0;
     int laneChanges = 0;
     double totSpeed = 0;
+    Stats roadStats;
     
     
-    public Road()
+    public Road(int lengthOfRoad)
     {
+        length = lengthOfRoad;
         r = new Random();
         nextCar = 0;
     }
-    
+    public void setStats(Stats s)
+    {
+        roadStats = s;
+    }    
     public void itterate(long Now, long End)
     {
        
@@ -52,7 +58,7 @@ public class Road
        
        temp.addAll(LeftLane);
        temp.addAll(RightLane);
-       Collections.sort(temp);
+       //Collections.sort(temp);
        
        for(Car c : temp)
        {
@@ -67,9 +73,11 @@ public class Road
        {
            Car rc = RightLane.get(i);
            rc.Update();
-           if(rc.getRearDistance() >= length)
+           if(rc.getDistance() >= length)
            {
+               
                removeCar(rc, Now);
+               roadStats.addCar(rc);
                i--;
            }
        }
@@ -78,7 +86,7 @@ public class Road
        {
            Car lc = LeftLane.get(i);
            lc.Update();
-           if(lc.getRearDistance() >= length)
+           if(lc.getDistance() >= length)
            {
                removeCar(lc, Now);
                i--;
@@ -104,6 +112,9 @@ public class Road
     public boolean addCar(long Now)
     {
         int speed = (int)(r.nextGaussian()*stdSpeed + meanSpeed);
+        
+        if(speed < stdSpeed) speed = stdSpeed;
+        
         int lane = getLaneToAddCar();
         Car c;
         if(lane == -1)
@@ -130,6 +141,8 @@ public class Road
     {
         return LeftLane.size() + RightLane.size();
     }
+
+       
     private int getLaneToAddCar()
     {
         boolean right = false;
@@ -155,14 +168,14 @@ public class Road
 
         if(!left)
         {
-            if(firstLeft.getRearDistance() >= firstLeft.getCarLength())
+            if(firstLeft.getRearDistance() > firstLeft.getCarLength())
             {
                 left = true;
             }
         }
         if(!right)
         {
-            if(firstRight.getRearDistance() >= firstRight.getCarLength())
+            if(firstRight.getRearDistance() > firstRight.getCarLength())
             {
                right = true;
             }
@@ -188,12 +201,14 @@ public class Road
             return -1;
         }
     }
+        
+    
     public void removeCar(Car c, long Now)
     {
         c.setEndTime(Now);
         long time = c.getTotalTime();
         double avgSpeed = (double)length / (double)time;
-        System.out.println(avgSpeed);
+        //System.out.println(avgSpeed);
         totSpeed += avgSpeed;
         cars ++;
         //Before removing do stats here
@@ -249,7 +264,7 @@ public class Road
     {
         int d = c.getDistance();
         
-        return (d < LCRstart || d > LCRend) && laneChange;
+        return (d > iniDist) && (d < LCRstart || d > LCRend) && laneChange;
         
     }
     public void setLaneChangeRestrictedArea(int start, int end)
@@ -271,7 +286,7 @@ public class Road
         else
         {
             LeftLane.add(c);
-            Collections.sort(LeftLane);
+           Collections.sort(LeftLane);
         }
         laneChanges ++;
     }

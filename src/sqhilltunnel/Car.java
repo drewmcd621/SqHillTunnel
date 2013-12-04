@@ -9,7 +9,7 @@ public class Car  implements Comparable<Car>
 {
     //Constants
     private int acceleration = 6; //ft/s^2
-    private double pSlowdown = 0.3; 
+    private double pSlowdown = 0.25; 
     private int carlength = 15; //ft
     //Variables
     private int distance; //ft
@@ -51,7 +51,7 @@ public class Car  implements Comparable<Car>
         changeLane = false;
         int thislane = getCarPos(lane, false);
         int otherlane = getCarPos(1-lane,true);
-        int thold = 15;
+        int thold = 0;
         
         //Get car in front of me
         Car front = getOtherCar(thislane - 1, lane);
@@ -85,7 +85,7 @@ public class Car  implements Comparable<Car>
             {
                 if(otherfront == null)
                 {
-                    maxlc = curSpeed;
+                    maxlc = curSpeed + thold + 1;
                 }
                 else
                 {
@@ -93,11 +93,11 @@ public class Car  implements Comparable<Car>
                     maxlc = Math.min(otherfront.getRearDistance() - this.distance - 1, curSpeed);
                 }
             }
-            else if(otherbehind.newDist < this.getRearDistance())
+            else if((otherbehind.getDistance() + otherbehind.curSpeed) < this.getRearDistance())
             {
                if(otherfront == null)
                 {
-                    maxlc = curSpeed;
+                    maxlc = curSpeed + thold +1;
                 }
                 else
                 {
@@ -114,13 +114,16 @@ public class Car  implements Comparable<Car>
          {
                 //Change lanes
                 changeLane = true;
-                curSpeed = maxlc;
+                curSpeed = Math.min(maxlc, curSpeed);
          } 
          else
          {
              changeLane = false;
              curSpeed = maxs;
-         }          
+         }  
+         
+         curSpeed = Math.min(maxSpeed, curSpeed);
+         curSpeed = Math.max(curSpeed, 0);
         
     }
     private int getCarPos(int lanepos, boolean fuzzy)

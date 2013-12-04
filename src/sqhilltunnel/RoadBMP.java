@@ -8,6 +8,7 @@ import java.awt.image.ImageProducer;
 import java.awt.color.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -26,15 +27,15 @@ public class RoadBMP
     int bWidth;
     int curRow;
     int maxRow;
-    int lane;
+
     
-    public RoadBMP(int timeRows, int blockWidth, int roadWidth, int roadLane)
+    public RoadBMP(int timeRows, int blockWidth, int roadWidth)
     {
         maxRow = timeRows;
         bWidth = blockWidth;
         imgWidth = (int)((double)roadWidth/(double)blockWidth) + 1;
         curRow = 0;
-        lane = roadLane;
+
         
         image = new BufferedImage(imgWidth, maxRow, BufferedImage.TYPE_INT_RGB);
         
@@ -44,33 +45,78 @@ public class RoadBMP
         
         if(curRow >= maxRow) return 0;
         
-        int ci = 0;
+        int cr = 0;
+        int cl = 0;
+        Color c;
+        
+        boolean left;
+        boolean right;
+        
+        ArrayList<Car> RL = r.getLane(0);
+        ArrayList<Car> LL = r.getLane(1);
+        
         int x;
         for(int d =r.getLength(); d >= 0 ; d-= bWidth)
         {
-            x = (imgWidth-1) - (d / bWidth);
-            if(ci >= r.getLane(lane).size())
+            x = (d / bWidth);
+            if(cl >= LL.size())
             {
-                image.setRGB(x, curRow, Color.black.getRGB());
+                left = false;
             }
-            else if(r.getLane(lane).get(ci).getDistance() > d)
+            else if(LL.get(cl).getDistance() > d)
             {
-                image.setRGB(x, curRow, Color.white.getRGB());
-                ci++;
+                //Car in left lane
+                left = true;
+                cl++;
             }
             else
             {
-                image.setRGB(x, curRow, Color.black.getRGB());
+                left = false;
             }
+            
+            if(cr >= RL.size())
+            {
+                right = false;
+            }
+            else if(RL.get(cr).getDistance() > d)
+            {
+                //Car in left lane
+                right = true;
+                cr++;
+            }
+            else
+            {
+                right = false;
+            }
+            
+            if(right && left)
+            {
+                c = Color.green;
+            }
+            else if(left)
+            {
+                c = Color.blue;
+            }
+            else if(right)
+            {
+                c = Color.red;
+            }
+            else
+            {
+                c = Color.black;
+            }
+            
+            image.setRGB(x, curRow, c.getRGB());
+
         }
         curRow ++;
         
         return maxRow - curRow;
     }
-    public void save() 
+    public void save(String name) 
     {
         try {
-            File out = new File("saved.png");
+            File out = new File(name + ".png");
             ImageIO.write(image, "png", out);
         } catch (IOException ex) {
             Logger.getLogger(RoadBMP.class.getName()).log(Level.SEVERE, null, ex);
