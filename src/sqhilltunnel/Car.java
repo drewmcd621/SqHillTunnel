@@ -8,8 +8,8 @@ import java.util.Random;
 public class Car  implements Comparable<Car>
 {
     //Constants
-    private int acceleration = 6; //ft/s^2
-    private double pSlowdown = 0.25; 
+    private int acceleration; //ft/s^2
+    private double pSlowdown = 0.175; 
     private int carlength = 15; //ft
     //Variables
     private int distance; //ft
@@ -36,6 +36,7 @@ public class Car  implements Comparable<Car>
         parent = parentRoad;
         r = new Random();
         curSpeed = maximumSpeed; //Enter sim at max speed
+        acceleration = 6;
         Slowdown(); //Then slowdown for car in front
     }
     
@@ -51,7 +52,7 @@ public class Car  implements Comparable<Car>
         changeLane = false;
         int thislane = getCarPos(lane, false);
         int otherlane = getCarPos(1-lane,true);
-        int thold = 0;
+        int thold = 6;
         
         //Get car in front of me
         Car front = getOtherCar(thislane - 1, lane);
@@ -93,7 +94,7 @@ public class Car  implements Comparable<Car>
                     maxlc = Math.min(otherfront.getRearDistance() - this.distance - 1, curSpeed);
                 }
             }
-            else if((otherbehind.getDistance() + otherbehind.curSpeed) < this.getRearDistance())
+            else if((otherbehind.getDistance() + 2*otherbehind.curSpeed) < this.getRearDistance())
             {
                if(otherfront == null)
                 {
@@ -104,6 +105,10 @@ public class Car  implements Comparable<Car>
                     //Get max speed if changing lanes
                     maxlc = Math.min(otherfront.getRearDistance() - this.distance - 1, curSpeed);
                 }
+            }
+            else
+            {
+                maxlc = -1;
             }
              //Prioritize staying in lane if equal speed
             
@@ -161,7 +166,7 @@ public class Car  implements Comparable<Car>
     {
         if(r.nextDouble() <= pSlowdown)
         {
-            curSpeed -= acceleration;
+            curSpeed -= 2*acceleration;
         }
         
         if(curSpeed < 0) curSpeed = 0;

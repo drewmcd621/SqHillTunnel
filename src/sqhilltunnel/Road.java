@@ -28,10 +28,13 @@ public class Road
     double CarsPerSecond = 0.626416666666667;
     int meanSpeed = 87;
     int stdSpeed = 11;
+    int minSpeed;
+    int maxSpeed;
     boolean laneChange = true;
     
     //Stats
     int cars = 0;
+    int delayedCars = 0;
     int laneChanges = 0;
     double totSpeed = 0;
     Stats roadStats;
@@ -42,6 +45,10 @@ public class Road
         length = lengthOfRoad;
         r = new Random();
         nextCar = 0;
+        
+        //Upper and lower bounds on speed
+        minSpeed = Math.max(meanSpeed - 3 * stdSpeed, 1);
+        maxSpeed = meanSpeed +3 * stdSpeed;
     }
     public void setStats(Stats s)
     {
@@ -77,7 +84,6 @@ public class Road
            {
                
                removeCar(rc, Now);
-               roadStats.addCar(rc);
                i--;
            }
        }
@@ -97,9 +103,13 @@ public class Road
        //Add cars
        if(Now >= nextCar && Now < End)
        {
-           if(addCar(Now));
+           if(addCar(Now))
            {
-
+              cars++;
+           }
+           else
+           {
+               delayedCars++;
            }
        }
        
@@ -113,7 +123,8 @@ public class Road
     {
         int speed = (int)(r.nextGaussian()*stdSpeed + meanSpeed);
         
-        if(speed < stdSpeed) speed = stdSpeed;
+        if(speed < minSpeed) speed = minSpeed;
+        if(speed > maxSpeed) speed = maxSpeed;
         
         int lane = getLaneToAddCar();
         Car c;
@@ -208,10 +219,7 @@ public class Road
         c.setEndTime(Now);
         long time = c.getTotalTime();
         double avgSpeed = (double)length / (double)time;
-        //System.out.println(avgSpeed);
-        totSpeed += avgSpeed;
-        cars ++;
-        //Before removing do stats here
+        roadStats.addCar(c);
         
         RightLane.remove(c);
         LeftLane.remove(c);

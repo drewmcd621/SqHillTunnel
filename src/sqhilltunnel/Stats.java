@@ -21,6 +21,10 @@ public class Stats
     private int dist;
     private ArrayList<Long> carTime;
     
+    public void Reset()
+    {
+        carTime.clear();
+    }
     
     public void addCar(Car c)
     {
